@@ -1,6 +1,6 @@
-# Meross Bash Control Scripts
+# Meross Bash Control Script
 
-A collection of Bash scripts to easily toggle and query the status of Meross Smart Lamps from the command line. Due to the Meross protocol requiring complex cryptographically signed hashes (`md5` timestamps with device keys), providing simple direct `curl` commands is difficult. 
+A unified Bash script to easily toggle and query the status of your Meross Smart Lamps from the command line. Due to the Meross protocol requiring complex cryptographically signed hashes (`md5` timestamps with device keys), providing a simple direct `curl` command is difficult. 
 
 This repository provides a reliable cloud-assisted wrapper script to tackle this.
 
@@ -27,3 +27,5 @@ Run the script using the exact name of your lamp as it appears in the Meross App
 ```
 *Note: The script will automatically download and cache `meross-iot` in a hidden `.meross_venv` folder on its very first run.*
 
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
