@@ -1,0 +1,6 @@
+*venv*/
+.meross_venv/
+.env
+toggle_lamp.py
+__pycache__
+*.pyc
