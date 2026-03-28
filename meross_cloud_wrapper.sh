@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Meross Cloud & Local Automated Control Wrapper
-# Usage: ./meross_cloud_wrapper.sh <lamp_name> <on|off|status>
+# Usage: ./meross_cloud_wrapper.sh <lamp_name> <on|off|status> OR ./meross_cloud_wrapper.sh list
 
 # Get the directory where the script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
@@ -12,17 +12,22 @@ export MEROSS_EMAIL="[EMAIL_ADDRESS]"
 export MEROSS_PASSWORD="[PASSWORD]"
 # ---------------------------------------------------------
 
-LAMP_NAME=$1
-ACTION=$2
+if [ "$1" == "list" ]; then
+    LAMP_NAME="all"
+    ACTION="list"
+else
+    LAMP_NAME=$1
+    ACTION=$2
 
-if [ -z "$LAMP_NAME" ] || [ -z "$ACTION" ]; then
-    echo "Usage: $0 <lamp_name> <on|off|status>"
-    exit 1
-fi
+    if [ -z "$LAMP_NAME" ] || [ -z "$ACTION" ]; then
+        echo "Usage: $0 <lamp_name> <on|off|status> OR $0 list"
+        exit 1
+    fi
 
-if [[ "$ACTION" != "on" && "$ACTION" != "off" && "$ACTION" != "status" ]]; then
-    echo "Action must be 'on', 'off', or 'status'."
-    exit 1
+    if [[ "$ACTION" != "on" && "$ACTION" != "off" && "$ACTION" != "status" ]]; then
+        echo "Action must be 'on', 'off', 'status', or run '$0 list'."
+        exit 1
+    fi
 fi
 
 
@@ -69,29 +74,39 @@ async def main():
     # print("Discovering devices...")
     await manager.async_device_discovery()
 
-    # 4. Find the specific device by name
-    devices = manager.find_devices(device_name=LAMP_NAME)
-
-    if not devices:
-        print(f"Error: Lamp '{LAMP_NAME}' not found. Please ensure the exact name matches your Meross app.")
+    # 4. Handle "list" action or find the specific device by name
+    if ACTION == "list":
+        devices = manager.find_devices()
+        print("\nDiscovered Devices on your Meross account:")
+        if not devices:
+            print("  No devices found.")
+        for d in devices:
+            kind = "Lamp/Switch" if d.supports_toggle() or d.supports_toggle_x() or d.supports_light_control() else "Other Device"
+            print(f"  - {d.name} ({kind})")
+        print("")
     else:
-        dev = devices[0]
-        # Check if the device is a togglable lamp
-        if dev.supports_light_control() or dev.supports_toggle() or dev.supports_toggle_x():
-            if ACTION == "status":
-                print(f"Querying status for '{dev.name}'...")
-                await dev.async_update()
-                is_on = dev.is_on()
-                print(f"Status: {'ON' if is_on else 'OFF'}")
-            else:
-                print(f"Turning {ACTION} '{dev.name}'...")
-                if ACTION == "on":
-                    await dev.async_turn_on(channel=0)
-                elif ACTION == "off":
-                    await dev.async_turn_off(channel=0)
-                print("Done.")
+        devices = manager.find_devices(device_name=LAMP_NAME)
+
+        if not devices:
+            print(f"Error: Lamp '{LAMP_NAME}' not found. Please ensure the exact name matches your Meross app.")
         else:
-            print(f"Error: The device '{LAMP_NAME}' does not support toggling.")
+            dev = devices[0]
+            # Check if the device is a togglable lamp
+            if dev.supports_light_control() or dev.supports_toggle() or dev.supports_toggle_x():
+                if ACTION == "status":
+                    print(f"Querying status for '{dev.name}'...")
+                    await dev.async_update()
+                    is_on = dev.is_on()
+                    print(f"Status: {'ON' if is_on else 'OFF'}")
+                else:
+                    print(f"Turning {ACTION} '{dev.name}'...")
+                    if ACTION == "on":
+                        await dev.async_turn_on(channel=0)
+                    elif ACTION == "off":
+                        await dev.async_turn_off(channel=0)
+                    print("Done.")
+            else:
+                print(f"Error: The device '{LAMP_NAME}' does not support toggling.")
 
     # 5. Cleanup
     manager.close()

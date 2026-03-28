@@ -20,6 +20,7 @@ This is the most reliable approach. It uses your Meross Cloud account to securel
 Run the script using the exact name of your lamp as it appears in the Meross App.
 
 ```bash
+./meross_cloud_wrapper.sh list
 ./meross_cloud_wrapper.sh "Bedroom Lamp" on
 ./meross_cloud_wrapper.sh "Bedroom Lamp" off
 ./meross_cloud_wrapper.sh "Bedroom Lamp" status
